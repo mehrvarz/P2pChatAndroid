@@ -3,7 +3,7 @@ P2pChatAndroid
 
 P2pChatAndroid is a secure peer-to-peer chat application. P2pChatAndroid implements end-to-end encryption with [Off-the-Record Messaging](http://de.wikipedia.org/wiki/Off-the-Record_Messaging) and [Socialist Millionaire' Protocol](http://en.wikipedia.org/wiki/Socialist_millionaire). No XMPP or other accounts are needed to use this app. P2pChat sessions can bridge devices operated behind firewalls.
 
-P2pChatAndroid is built upon P2pChatOTR and P2pCore. Implementation details can be found here: [P2pChatOTR](https://github.com/mehrvarz/P2pChatOTR#p2pchatotr) and here [P2pCore](https://github.com/mehrvarz/P2pCore#p2pcore---a-portable-peer-to-peer-framework).
+P2pChatAndroid is built upon two other projects of mine: [P2pChatOTR](https://github.com/mehrvarz/P2pChatOTR#p2pchatotr) and here [P2pCore](https://github.com/mehrvarz/P2pCore#p2pcore---a-portable-peer-to-peer-framework). Technical information can be found there.
 
 *** This project is still work in progress. I will remove this warning when the app becomes stable. Thank you. ***
 
