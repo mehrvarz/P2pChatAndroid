@@ -1,0 +1,64 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  This file is part of P2pChat
+
+  Copyright (C) 2012 timur.mehrvarz@gmail.com
+
+  This program is free software: you can redistribute it and/or modify
+  it under the terms of the GNU General Public License as published by
+  the Free Software Foundation <http://www.gnu.org/licenses/>, either 
+  version 3 of the License, or (at your option) any later version.
+-->
+
+<selector xmlns:android="http://schemas.android.com/apk/res/android">
+
+  <item android:state_pressed="true" >
+    <shape android:shape="rectangle">
+      <solid android:color="#a0c0c0c0" />
+      <stroke
+        android:width="1.4dp"
+        android:color="#99999999" />
+      <corners
+        android:radius="6dp" />
+      <padding
+        android:left="10dp"
+        android:right="10dp"
+        android:top="10dp"
+        android:bottom="10dp" />
+    </shape>
+  </item>
+
+  <item android:state_focused="true" >
+    <shape android:shape="rectangle">
+      <solid android:color="#a0c0c0c0" />
+      <stroke
+        android:width="1.4dp"
+        android:color="#99999999" />
+      <corners
+        android:radius="6dp" />
+      <padding
+        android:left="10dp"
+        android:right="10dp"
+        android:top="10dp"
+        android:bottom="10dp" />
+    </shape>
+  </item>
+
+  <item>        
+    <shape android:shape="rectangle">
+      <solid android:color="#90000000" />
+      <stroke
+        android:width="1.4dp"
+        android:color="#666666" />
+      <corners
+        android:radius="6dp" />
+      <padding
+        android:left="10dp"
+        android:right="10dp"
+        android:top="10dp"
+        android:bottom="10dp" />
+    </shape>
+  </item>
+
+</selector>
+

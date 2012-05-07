@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  This file is part of P2pChat
+
+  Copyright (C) 2012 timur.mehrvarz@gmail.com
+
+  This program is free software: you can redistribute it and/or modify
+  it under the terms of the GNU General Public License as published by
+  the Free Software Foundation <http://www.gnu.org/licenses/>, either 
+  version 3 of the License, or (at your option) any later version.
+-->
+
+<!-- This is being used to style adapters for mConversationView  -->
+
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+  android:layout_width="match_parent"
+  android:layout_height="wrap_content"
+  android:padding="4dp"
+>
+  <TextView
+    android:id="@+id/keyName"
+    android:layout_width="wrap_content"
+    android:layout_height="wrap_content"
+    android:textSize="18sp"
+    android:textColor="#eee"
+    android:padding="4dp"
+    android:lineSpacingExtra="4dp"
+    android:layout_marginTop="6dp"
+    android:layout_marginBottom="6dp"
+  />
+</RelativeLayout>
+

@@ -1,0 +1,119 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  This file is part of P2pChat
+
+  Copyright (C) 2012 timur.mehrvarz@gmail.com
+
+  This program is free software: you can redistribute it and/or modify
+  it under the terms of the GNU General Public License as published by
+  the Free Software Foundation <http://www.gnu.org/licenses/>, either 
+  version 3 of the License, or (at your option) any later version.
+-->
+
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+  android:layout_width="match_parent"
+  android:layout_height="match_parent"
+>
+  <LinearLayout
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="horizontal"
+    android:gravity="center"
+  >
+    <ImageView
+      android:layout_width="512px"
+      android:layout_height="512px"
+      android:background="@drawable/app_icon_bg"
+    >
+    </ImageView>
+  </LinearLayout>
+
+  <LinearLayout
+    android:id="@+id/linearlayout"
+    android:orientation="vertical"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:layout_alignParentTop="true"
+  >
+    <LinearLayout
+      android:layout_width="fill_parent" 
+      android:layout_height="wrap_content"
+      android:orientation="horizontal"
+    >
+      <!--ImageView android:id="@+id/ImageView01" 
+                android:layout_width="57px" 
+                android:layout_height="wrap_content"
+                android:background="@drawable/icon1">
+      </ImageView-->
+      <TextView 
+        android:id="@+id/title"
+        android:text="P2pChat" 
+        android:layout_width="wrap_content" 
+        android:layout_height="wrap_content" 
+        android:textSize="16sp"
+        android:textColor="#666666"
+        android:paddingLeft="6dp"
+        android:layout_weight="1"
+      />
+
+      <TextView 
+        android:id="@+id/relay"
+        android:text="relayed" 
+        android:layout_width="wrap_content" 
+        android:layout_height="wrap_content" 
+        android:textSize="16sp"
+        android:textColor="#666666"
+        android:paddingLeft="14dp"
+      />
+      <TextView 
+        android:id="@+id/direct"
+        android:text="direct" 
+        android:layout_width="wrap_content" 
+        android:layout_height="wrap_content" 
+        android:textSize="16sp"
+        android:textColor="#666666"
+        android:paddingLeft="14dp"
+      />
+      <TextView 
+        android:id="@+id/crypted"
+        android:text="crypted" 
+        android:layout_width="wrap_content" 
+        android:layout_height="wrap_content" 
+        android:textSize="16sp"
+        android:textColor="#666666"
+        android:paddingLeft="14dp"
+        android:paddingRight="6dp"
+      />
+    </LinearLayout>
+
+    <ListView 
+      android:id="@+id/listview"
+      android:layout_width="match_parent"
+      android:layout_height="match_parent"
+      android:stackFromBottom="true"
+      android:transcriptMode="alwaysScroll"
+      android:layout_weight="1"
+    />
+    <LinearLayout 
+      android:id="@+id/edit_fields"
+      android:orientation="horizontal"
+      android:layout_width="match_parent"
+      android:layout_height="wrap_content"
+    >
+      <EditText 
+        android:id="@+id/edit_text_out"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_weight="1"
+        android:layout_gravity="bottom"
+      />
+      <Button
+        android:id="@+id/button_send"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="@string/send"
+      />
+    </LinearLayout>
+  </LinearLayout>
+</RelativeLayout>
+

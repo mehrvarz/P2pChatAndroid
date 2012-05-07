@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  This file is part of P2pChat
+
+  Copyright (C) 2012 timur.mehrvarz@gmail.com
+
+  This program is free software: you can redistribute it and/or modify
+  it under the terms of the GNU General Public License as published by
+  the Free Software Foundation <http://www.gnu.org/licenses/>, either 
+  version 3 of the License, or (at your option) any later version.
+-->
+<resources>
+    <string name="app_name">P2pChat</string>
+    <string name="send">Send</string>
+</resources>
