@@ -25,7 +25,7 @@ import android.os.{Handler, Message, SystemClock, Bundle, IBinder }
 import android.view.{View, Window, Gravity, LayoutInflater }
 import android.view.ViewGroup
 import android.view.ViewGroup.LayoutParams
-import android.widget.{Button, ImageView, CheckBox, LinearLayout, Toast, ListView, ProgressBar,
+import android.widget.{Button, ImageView, CheckBox, LinearLayout, ListView, ProgressBar,
                        AdapterView, TextView, CompoundButton, ScrollView, EditText, ArrayAdapter }
 import android.widget.AdapterView.OnItemClickListener
 import timur.p2pCore._
@@ -283,9 +283,7 @@ class P2pChatActivity extends Activity {
       }
     }
 
-
-
-    // otr connect (without a target-key)
+    // otr connect
     AndrTools.buttonCallback(connectOTRButton) { () =>
       if(D) Log.i(TAG, "onClick connect")
       // todo: would be nice if we could disable all text-correction features here
@@ -401,31 +399,6 @@ class P2pChatActivity extends Activity {
 
   override def onBackPressed() {
     // back key is pressed in p2p-connected mode (connectDialog is not shown)
-
-// tmtmtm
-// if we are connected (or connecting), back key must ask user before disconnect and switching back to connect-menu
-// if we are not connected (or connecting) we should call disconnect and switching back to connect-menu
-
-/*
-    if(appService==null || (appService.p2pChatEncrypt==null && appService.p2pChatOTR==null) ||
-        (appService.p2pChatEncrypt.udpConnectIpAddr==null && !appService.p2pChatEncrypt.relayBasedP2pCommunication) ||
-        (appService.p2pChatOTR.udpConnectIpAddr==null && !appService.p2pChatOTR.relayBasedP2pCommunication)
-      ) {
-      // we are currently NOT p2p connected: kill service + activity
-                // todo: is this case possible at all ???
-      if(D) Log.i(TAG, "onBackPressed: not p2p connected => kill service + activity...")     
-      if(serviceIntent!=null) {
-        // kill our service
-        stopService(serviceIntent)
-        serviceIntent=null
-        if(D) Log.i(TAG, "onBackPressed stopService done")
-      }
-      if(D) Log.i(TAG, "onBackPressed finished")
-      super.onBackPressed  // -> onDestroy
-      return
-    }
-*/
-
     // we are currently connected: ask user if disconnect is really desired
     if(D) Log.i(TAG, "onBackPressed: we are currently p2p connected")
     val dialogClickListener = new DialogInterface.OnClickListener() {

@@ -19,10 +19,8 @@ import android.content.Context
 import android.content.Intent
 import android.os.Bundle
 import android.util.Log
-import android.view.Window
-import android.view.View
-import android.widget.ListView
-import android.widget.ArrayAdapter
+import android.view.{ Window, View }
+import android.widget.{ Toast, ListView, ArrayAdapter }
 
 class SelectTargetKeyActivity extends ListActivity {
   private val TAG = "SelectTargetKeyActivity"
@@ -33,15 +31,19 @@ class SelectTargetKeyActivity extends ListActivity {
   override def onCreate(savedInstanceState:Bundle) {
     super.onCreate(savedInstanceState)
     if(D) Log.i(TAG, "onCreate()")
-    //requestWindowFeature(Window.FEATURE_INDETERMINATE_PROGRESS)
     context = this
-
-    val targetKeyAdapter = new TargetKeyAdapter(this, R.layout.key_name_entry)
-		setListAdapter(targetKeyAdapter)
 
     val keyFolderPath = "/sdcard/p2pKeys/"
     val fileArray = new File(keyFolderPath).listFiles
-    if(fileArray!=null) {
+    if(fileArray==null || fileArray.length<=0) {
+      if(D) Log.i(TAG, "onCreate() no stored keys found")
+      Toast.makeText(context, "no stored keys found", Toast.LENGTH_LONG).show
+      finish
+
+    } else {
+      if(D) Log.i(TAG, "onCreate() fileArray.length="+fileArray.length)
+      val targetKeyAdapter = new TargetKeyAdapter(this, R.layout.key_name_entry)
+		  setListAdapter(targetKeyAdapter)
       val fileSortedList = fileArray.iterator.toList.sortWith(_.getName < _.getName)
       for(file <- fileSortedList) { 
         val fileName = file.getName.trim
