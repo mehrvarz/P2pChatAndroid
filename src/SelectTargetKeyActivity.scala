@@ -41,15 +41,17 @@ class SelectTargetKeyActivity extends ListActivity {
 
     val keyFolderPath = "/sdcard/p2pKeys/"
     val fileArray = new File(keyFolderPath).listFiles
-    val fileSortedList = fileArray.iterator.toList.sortWith(_.getName < _.getName)
-    for(file <- fileSortedList) { 
-      val fileName = file.getName.trim
-      if(fileName.length>4 && fileName.endsWith(".pub") && fileName!="key.pub") {
-        if(D) Log.i(TAG, "onCreate() adding '"+fileName+"'")
-        targetKeyAdapter.add(fileName.substring(0,fileName.length-4))
+    if(fileArray!=null) {
+      val fileSortedList = fileArray.iterator.toList.sortWith(_.getName < _.getName)
+      for(file <- fileSortedList) { 
+        val fileName = file.getName.trim
+        if(fileName.length>4 && fileName.endsWith(".pub") && fileName!="key.pub") {
+          if(D) Log.i(TAG, "onCreate() adding '"+fileName+"'")
+          targetKeyAdapter.add(fileName.substring(0,fileName.length-4))
+        }
       }
+      targetKeyAdapter.notifyDataSetChanged
     }
-    targetKeyAdapter.notifyDataSetChanged
   }
 
 	override def onListItemClick(listView:ListView, view:View, position:Int, id:Long) :Unit = {
