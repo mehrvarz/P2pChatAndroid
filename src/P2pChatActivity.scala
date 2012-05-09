@@ -181,23 +181,15 @@ class P2pChatActivity extends Activity {
       if(D) Log.i(TAG, "onCreate bindService DONE")
     }
 
-    // cancel connect dialog (user has hit back key while in connectDialog)
+    // user hits back key while in connectDialog
     connectDialog.setOnCancelListener(new DialogInterface.OnCancelListener() {
       override def onCancel(dialog:DialogInterface) {
         if(D) Log.i(TAG, "connectDialog setOnCancelListener")
 
-        // connectDialog is currently shown
         // find out if we are truely NOT connected or connecting
         if(appService==null || 
           (appService.p2pChatEncrypt==null && appService.p2pChatOTR==null) ||
-           !appService.connecting)
-/*
-        if(appService==null || appService.p2pChatEncrypt==null ||
-            (appService.p2pChatEncrypt.udpConnectIpAddr==null 
-              && !appService.p2pChatEncrypt.relayBasedP2pCommunication
-              && !appService.connecting)) 
-*/
-        {
+           !appService.connecting) {
           // we are NOT connected or connecting: kill service + activity
           if(D) Log.i(TAG, "connectDialog onCancelListener: not p2p connected => kill service + activity...")     
           if(serviceIntent!=null) {
@@ -292,7 +284,7 @@ class P2pChatActivity extends Activity {
         editText.setText(otrString)
       otrDialog = new AlertDialog.Builder(activity)
                      .setTitle("Off the record")
-                     .setMessage("Enter secret:")
+                     .setMessage("Both clients must enter the exact same secret. It's best to use two words separated by space:")
                      .setView(editText)
                      .setPositiveButton("Connect",new DialogInterface.OnClickListener() {
                           override def onClick(dialogInterf:DialogInterface, whichButton:Int) {
@@ -345,7 +337,6 @@ class P2pChatActivity extends Activity {
         if(D) Log.i(TAG, "connect p2pChatOTR ("+p2pChatOTR+") start ...")
         p2pChatOTR.start // blocking
         if(D) Log.i(TAG, "connect finished")
-        // todo: must make sure menu buttons become visible
       }
     }.start
   }

@@ -27,5 +27,49 @@ In order to build this project, run:
 Licenses
 --------
 
-Same as: [P2pChatOTR Licenses](https://github.com/mehrvarz/P2pChatOTR#licenses)
+- P2pChatOTR + P2pCore source code and library
+
+  licensed under the GNU General Public [LICENSE](P2pChatOTR/blob/master/licenses/LICENSE), Version 3.
+
+  Copyright (C) 2012 timur.mehrvarz@gmail.com
+
+  https://github.com/mehrvarz/P2pChatOTR
+
+  https://github.com/mehrvarz/P2pCore
+
+- The Java Off-the-Record Messaging library
+
+  covered by the LGPL [LICENSE](P2pChatOTR/blob/master/licenses/java-otr/COPYING).
+
+  [java-otr README](P2pChatOTR/blob/master/licenses/java-otr/README)
+
+  http://www.cypherpunks.ca/otr/
+
+- ProGuard Java class file shrinker
+
+  [ProGuard](http://proguard.sourceforge.net/license.html) is distributed under the terms of the GNU General Public License (GPL), version 2, as published by the Free Software Foundation (FSF)
+
+  http://proguard.sourceforge.net/
+  
+- Bouncy Castle 
+
+  http://bouncycastle.org/
+
+- Google Protobuf 
+
+  [New BSD License](http://www.opensource.org/licenses/bsd-license.php)
+
+  https://code.google.com/p/protobuf/
+
+- Apache Commons-codec 
+
+  All software produced by The Apache Software Foundation or any of its projects or subjects is licensed according to the terms of [Apache License, Version 2.0](http://www.apache.org/licenses/)
+
+  http://commons.apache.org/codec/
+
+- Emoticon icon
+
+  License [CC Attribution Non-Commercial No Derivatives](http://creativecommons.org/licenses/by-nc-nd/3.0)
+
+  http://www.iconspedia.com/icon/emoticon-confuse-icon-25159.html
 
