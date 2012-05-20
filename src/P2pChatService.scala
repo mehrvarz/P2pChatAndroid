@@ -44,6 +44,7 @@ class P2pChatService extends android.app.Service {
   var connecting = false
   var manualDisconnect = false    // usually set by client app; if NOT set, p2pExit will show "P2P disconnect" dialog
   var connectionName = ""
+  var preferReleayedCommunication = false
 
   class LocalBinder extends android.os.Binder {
     def getService = P2pChatService.this
@@ -282,46 +283,94 @@ class P2pChatService extends android.app.Service {
       }
     }
 
+// tmtmtm: new
+    /** we are now p2p-connected via relay server (tcp) */
     override def connectedThread(connectString:String) {
+      log("connectedThread connectString="+connectString)
       activityMsgHandler.obtainMessage(P2pChatService.ACTIVITY_MSG_CONNECT_STATE_RELAY, 1, -1, null).sendToTarget
-      super.connectedThread(connectString)
+      if(preferReleayedCommunication) {
+        log("connectedThread preferReleayedCommunication ####")
+        relayBasedP2pCommunication = true  // we will NOT disconnect our relay connection
+        // set publicUdpAddrString and otherUdpAddrString AS IF we are UDP connected
+        val tokenArrayOfStrings = connectString split '|'
+        val otherPublicIpAddr = tokenArrayOfStrings(2)
+        val otherPublicPort = new java.lang.Integer(tokenArrayOfStrings(3)).intValue
+        val myPublicIpAddr = tokenArrayOfStrings(4)
+        val myPublicPort = new java.lang.Integer(tokenArrayOfStrings(5)).intValue
+        otherUdpAddrString = otherPublicIpAddr+":"+otherPublicPort
+        publicUdpAddrString = myPublicIpAddr+":"+myPublicPort
+        log("connectedThread otherUdpAddrString="+otherUdpAddrString+" -> p2pSendThread")
+        p2pSendThread
+
+      } else {
+        super.connectedThread(connectString)  // receiving datagram's
+      }
     }
 
-    override def p2pSendThread() {
+// tmtmtm: new
+    /** we receive data via (or from) the relay server */
+    override def receiveMsgHandler(str:String) {
+      if(preferReleayedCommunication) {
+        //log("receiveMsgHandler preferReleayedCommunication str="+str+" ####")
+        // forward all receiveMsgHandler(str) to p2pReceivePreHandler(str)
+        if(str.startsWith("udpAddress=")) {
+          // ignore
+        } else {
+          p2pReceivePreHandler(str)  // -> p2pReceiveHandler()
+        }
+      } else {
+        super.receiveMsgHandler(str)
+      }
+    }
 
+//tmtmtm
+    /** we are now p2p connected (if relayBasedP2pCommunication is set, p2p is relayed; else it is direct) */
+    override def p2pSendThread() {
+      //connecting = false
+      // todo: change connect message from "Connecting..." to "Establish encryption..."
       if(!relayBasedP2pCommunication)
         activityMsgHandler.obtainMessage(P2pChatService.ACTIVITY_MSG_CONNECT_STATE_DIRECT, 1, -1, null).sendToTarget
-
-      connecting = false
-
       val connectionType = if(!relayBasedP2pCommunication) "direct" else "relayed"
       val connectionString = connectionType + " P2P connection"
       conversationQueuePut(connectionString)
       activityMsgHandler.obtainMessage(P2pChatService.ACTIVITY_MSG_ADD_CONVERSATION, -1, -1, connectionString).sendToTarget
 
       val displayMessage = "from: "+publicUdpAddrString+" to: "+udpConnectIpAddr+":"+udpConnectPortInt
+      log("p2pSendThread displayMessage='"+displayMessage+"'")
       conversationQueuePut(displayMessage)
       activityMsgHandler.obtainMessage(P2pChatService.ACTIVITY_MSG_ADD_CONVERSATION, -1, -1, displayMessage).sendToTarget
 
+      log("p2pSendThread otherUdpAddrString='"+otherUdpAddrString+"'")
       if(publicUdpAddrString>otherUdpAddrString) {
         val firstMessage = "start otr/smp..."
-        //log("send first msg: '"+firstMessage+"'")
+        log("send first msg: '"+firstMessage+"'")
         // client A will send a msg to get to "AKE succeeded" state, where the other client will do initiateSmp()
-        otrMsgSend(firstMessage)
-        
-        // todo: change connect message from "Connecting..." to "Establish encryption..."
+        otrMsgSend(firstMessage)       
+      } else {
+        log("not send first msg ####")
+      }
+    }
+
+    override def p2pSend(sendString:String, 
+                         host:String=udpConnectIpAddr, 
+                         port:Int=udpConnectPortInt, 
+                         cmd:String="string") :Unit = synchronized {
+      if(relayBasedP2pCommunication) {
+        send(sendString)
+      } else {
+        super.p2pSend(sendString,host,port,cmd)
       }
     }
 
     override def p2pReceiveHandler(str:String, host:String, port:Int) {
-      // here we receive and process decrypted data strings from the other client
-      // sent directly per UDP - or relayed per TCP (if relayBasedP2pCommunication is set)
+      // here we receive and process data from other client
+      // sent directly per UDP - or (if relayBasedP2pCommunication is set) relayed per TCP
       // if relayBasedP2pCommunication is not set, we may disconnect the relay connection now 
-      // log("p2pReceiveHandler str='"+str+"'")  // never log user data
+      //log("p2pReceiveHandler str='"+str+"'")  // never log user data
 
       // disconnect our relay connection (stay connected via direct p2p)
       if(relaySocket!=null && !relayBasedP2pCommunication) {
-        log("relaySocket.close")
+        log("force relaySocket.close (str="+str+")")
         relayQuitFlag=true
         try { relaySocket.close } catch { case ex:Exception => }
         relaySocket=null
@@ -347,7 +396,6 @@ class P2pChatService extends android.app.Service {
       super.relayExit
     }
 
-/* */
     def storeRemotePublicKey(keyName:String, keystring:String) {
       if(keyName=="-") {
         // let user enter a name for this newly received connection key
@@ -417,7 +465,6 @@ class P2pChatService extends android.app.Service {
         Tools.writeToFile(keyFolderPath+"/"+keyName+".pub", keystring)
       }
     }
-/* */
 
     override def initHostPubKey() {
       // load the relay server public key
@@ -451,10 +498,16 @@ class P2pChatService extends android.app.Service {
         log("p2pExit udpConnectIpAddr="+udpConnectIpAddr+" relayBasedP2pCommunication="+relayBasedP2pCommunication+
            " p2pQuitFlag="+p2pQuitFlag+" manualDisconnect="+manualDisconnect)
         if((udpConnectIpAddr!=null || relayBasedP2pCommunication) && !manualDisconnect) {
-          AndrTools.runOnUiThread(activity) { () =>
-            AndrTools.alertDialog(activity, "P2P disconnect") { () =>
-              activityMsgHandler.obtainMessage(P2pChatService.ACTIVITY_MSG_CONNECT_DIALOG_SHOW, -1, -1, null).sendToTarget
+          try {
+            AndrTools.runOnUiThread(activity) { () =>
+              AndrTools.alertDialog(activity, "P2P disconnect") { () =>
+                activityMsgHandler.obtainMessage(P2pChatService.ACTIVITY_MSG_CONNECT_DIALOG_SHOW, -1, -1, null).sendToTarget
+              }
             }
+          } catch {
+            case ex:Exception =>
+              // p2pExit may be called AFTER "onDestroy finished" / "Shutting down VM"
+              // -> "Attempted to add application window with unknown token"
           }
         }
       }
@@ -552,6 +605,10 @@ class P2pChatService extends android.app.Service {
       }
     }
 
+
+    ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+
     class LocalCallbackAndr(p2pBase:P2pBase, otrContext:OTRContext) 
       extends LocalCallback(p2pBase:P2pBase, otrContext:OTRContext) {
 
@@ -560,22 +617,24 @@ class P2pChatService extends android.app.Service {
           if(publicUdpAddrString>otherUdpAddrString) {
             // Client A will respondSmp; if all goes well, both clients will receive OTRL_SMPEVENT_SUCCESS
             if(smpSecret!=null && smpSecret.length>0) {
-              // log("handleSmpEvent respond OMP with smpSecret="+smpSecret)   // never log the secret
+              log("handleSmpEvent respond OMP with smpSecret="+smpSecret)   // never log the secret
               otrContext.respondSmp(smpSecret, otrCallbacks)
             } else {
-              // log("handleSmpEvent respond OMP with p2pSecret="+p2pSecret)   // never log the secret
+              log("handleSmpEvent respond OMP with p2pSecret="+p2pSecret)   // never log the secret
               otrContext.respondSmp(p2pSecret, otrCallbacks)
             }
           }
 
         } else if(smpEvent == OTRCallbacks.OTRL_SMPEVENT_SUCCESS) {
           log("************* SMP succeeded ***************")
+          connecting = false
           p2pEncryptedCommunication
         }
 
         else if(smpEvent == OTRCallbacks.OTRL_SMPEVENT_FAILURE) {
           log("************* SMP failed ***************")
           // abort "connecting..."
+          connecting = false
           p2pQuit(true)
 
           // show error message and switch back to connect dialog

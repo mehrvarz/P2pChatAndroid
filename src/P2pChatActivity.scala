@@ -25,7 +25,7 @@ import android.os.{Handler, Message, SystemClock, Bundle, IBinder }
 import android.view.{View, Window, Gravity, LayoutInflater }
 import android.view.ViewGroup
 import android.view.ViewGroup.LayoutParams
-import android.widget.{Button, ImageView, CheckBox, LinearLayout, ListView, ProgressBar,
+import android.widget.{Button, ImageView, CheckBox, LinearLayout, ListView, ProgressBar, Toast, 
                        AdapterView, TextView, CompoundButton, ScrollView, EditText, ArrayAdapter }
 import android.widget.AdapterView.OnItemClickListener
 import timur.p2pCore._
@@ -68,6 +68,8 @@ class P2pChatActivity extends Activity {
     mConversationView = findViewById(R.id.listview).asInstanceOf[ListView]
     if(mConversationView==null) {
       Log.e(TAG, "onCreate mConversationView=null")
+      Toast.makeText(activity, "listview not found", Toast.LENGTH_LONG).show
+      finish
       return
     }
     mConversationArrayAdapter = new ArrayAdapter[String](this, R.layout.message)
@@ -277,22 +279,30 @@ class P2pChatActivity extends Activity {
 
     // otr connect
     AndrTools.buttonCallback(connectOTRButton) { () =>
-      if(D) Log.i(TAG, "onClick connect")
+      if(D) Log.i(TAG, "onClick connectOTRButton")
       // todo: would be nice if we could disable all text-correction features here
-      val editText = new EditText(activity)
+
+      val layoutInflater = activity.getSystemService(Context.LAYOUT_INFLATER_SERVICE).asInstanceOf[LayoutInflater]
+      if(layoutInflater==null) {
+        if(D) Log.i(TAG, "layoutInflater==null")
+        return
+      }
+      val connectForm = layoutInflater.inflate(R.layout.connect_form, null)
+      val editText = connectForm.findViewById(R.id.editText).asInstanceOf[EditText]
       if(otrString!=null)
         editText.setText(otrString)
+      val preferRelayedCheckBox = connectForm.findViewById(R.id.preferRelayedCommunication).asInstanceOf[CheckBox]
       otrDialog = new AlertDialog.Builder(activity)
-                     .setTitle("Off the record")
+                     .setTitle("Off the record secret")
                      .setMessage("Both clients must enter the exact same secret. It's best to use two words separated by space:")
-                     .setView(editText)
+                     .setView(connectForm)
                      .setPositiveButton("Connect",new DialogInterface.OnClickListener() {
                           override def onClick(dialogInterf:DialogInterface, whichButton:Int) {
                             otrString = editText.getText.toString.trim
                             val tokenArrayOfStrings = otrString split ' '
                             val p2pSecret = tokenArrayOfStrings(0)
                             val smpSecret = if(tokenArrayOfStrings.length>1) tokenArrayOfStrings(1) else null
-                            connectOTR(p2pSecret, smpSecret)
+                            connectOTR(p2pSecret, smpSecret, preferRelayedCheckBox.isChecked)
                           }
                         })
                      .show
@@ -325,8 +335,9 @@ class P2pChatActivity extends Activity {
     }
   }
 
-  private def connectOTR(p2pSecret:String, smpSecret:String) {
+  private def connectOTR(p2pSecret:String, smpSecret:String, preferReleayed:Boolean) {
     appService.connectionName = p2pSecret
+    appService.preferReleayedCommunication = preferReleayed
     msgFromServiceHandler.obtainMessage(P2pChatService.ACTIVITY_MSG_CONNECT_DIALOG_CONNECTING, -1, -1, null).sendToTarget
 
     new Thread("p2pChatOTR") {
