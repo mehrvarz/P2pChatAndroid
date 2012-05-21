@@ -42,9 +42,9 @@ class P2pChatService extends android.app.Service {
   var p2pChatOTR:P2pChatOTR = null
   var p2pChatEncrypt:P2pChatEncrypt = null
   var connecting = false
-  var manualDisconnect = false    // usually set by client app; if NOT set, p2pExit will show "P2P disconnect" dialog
+  var manualDisconnect = false             // set by activity; if NOT set, p2pExit will show "P2P disconnect" dialog
+  var preferReleayedCommunication = false  // set by activity; will set relayBasedP2pCommunication in connectedThread()
   var connectionName = ""
-  var preferReleayedCommunication = false
 
   class LocalBinder extends android.os.Binder {
     def getService = P2pChatService.this
@@ -290,7 +290,10 @@ class P2pChatService extends android.app.Service {
       activityMsgHandler.obtainMessage(P2pChatService.ACTIVITY_MSG_CONNECT_STATE_RELAY, 1, -1, null).sendToTarget
       if(preferReleayedCommunication) {
         log("connectedThread preferReleayedCommunication ####")
-        relayBasedP2pCommunication = true  // we will NOT disconnect our relay connection
+        relayBasedP2pCommunication = true  // receiveMsgHandler() -> p2pReceivePreHandler()
+                                           // p2pSend() -> send()
+                                           // do NOT disconnect relay connection in p2pReceiveHandler()
+
         // set publicUdpAddrString and otherUdpAddrString AS IF we are UDP connected
         val tokenArrayOfStrings = connectString split '|'
         val otherPublicIpAddr = tokenArrayOfStrings(2)
@@ -309,9 +312,10 @@ class P2pChatService extends android.app.Service {
 
 // tmtmtm: new
     /** we receive data via (or from) the relay server */
+/*
     override def receiveMsgHandler(str:String) {
-      if(preferReleayedCommunication) {
-        //log("receiveMsgHandler preferReleayedCommunication str="+str+" ####")
+      if(relayBasedP2pCommunication) {
+        //log("receiveMsgHandler relayBasedP2pCommunication str="+str+" ####")
         // forward all receiveMsgHandler(str) to p2pReceivePreHandler(str)
         if(str.startsWith("udpAddress=")) {
           // ignore
@@ -322,6 +326,7 @@ class P2pChatService extends android.app.Service {
         super.receiveMsgHandler(str)
       }
     }
+*/
 
 //tmtmtm
     /** we are now p2p connected (if relayBasedP2pCommunication is set, p2p is relayed; else it is direct) */
@@ -351,6 +356,7 @@ class P2pChatService extends android.app.Service {
       }
     }
 
+/*
     override def p2pSend(sendString:String, 
                          host:String=udpConnectIpAddr, 
                          port:Int=udpConnectPortInt, 
@@ -361,6 +367,7 @@ class P2pChatService extends android.app.Service {
         super.p2pSend(sendString,host,port,cmd)
       }
     }
+*/
 
     override def p2pReceiveHandler(str:String, host:String, port:Int) {
       // here we receive and process data from other client
