@@ -283,7 +283,6 @@ class P2pChatService extends android.app.Service {
       }
     }
 
-// tmtmtm: new
     /** we are now p2p-connected via relay server (tcp) */
     override def connectedThread(connectString:String) {
       log("connectedThread connectString="+connectString)
@@ -310,25 +309,6 @@ class P2pChatService extends android.app.Service {
       }
     }
 
-// tmtmtm: new
-    /** we receive data via (or from) the relay server */
-/*
-    override def receiveMsgHandler(str:String) {
-      if(relayBasedP2pCommunication) {
-        //log("receiveMsgHandler relayBasedP2pCommunication str="+str+" ####")
-        // forward all receiveMsgHandler(str) to p2pReceivePreHandler(str)
-        if(str.startsWith("udpAddress=")) {
-          // ignore
-        } else {
-          p2pReceivePreHandler(str)  // -> p2pReceiveHandler()
-        }
-      } else {
-        super.receiveMsgHandler(str)
-      }
-    }
-*/
-
-//tmtmtm
     /** we are now p2p connected (if relayBasedP2pCommunication is set, p2p is relayed; else it is direct) */
     override def p2pSendThread() {
       //connecting = false
@@ -355,19 +335,6 @@ class P2pChatService extends android.app.Service {
         log("not send first msg ####")
       }
     }
-
-/*
-    override def p2pSend(sendString:String, 
-                         host:String=udpConnectIpAddr, 
-                         port:Int=udpConnectPortInt, 
-                         cmd:String="string") :Unit = synchronized {
-      if(relayBasedP2pCommunication) {
-        send(sendString)
-      } else {
-        super.p2pSend(sendString,host,port,cmd)
-      }
-    }
-*/
 
     override def p2pReceiveHandler(str:String, host:String, port:Int) {
       // here we receive and process data from other client
