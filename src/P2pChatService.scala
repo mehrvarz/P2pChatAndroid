@@ -342,15 +342,6 @@ class P2pChatService extends android.app.Service {
       // if relayBasedP2pCommunication is not set, we may disconnect the relay connection now 
       //log("p2pReceiveHandler str='"+str+"'")  // never log user data
 
-      // disconnect our relay connection (stay connected via direct p2p)
-      if(relaySocket!=null && !relayBasedP2pCommunication) {
-        log("force relaySocket.close (str="+str+")")
-        relayQuitFlag=true
-        try { relaySocket.close } catch { case ex:Exception => }
-        relaySocket=null
-        activityMsgHandler.obtainMessage(P2pChatService.ACTIVITY_MSG_CONNECT_STATE_RELAY, 0, -1, null).sendToTarget
-      }
-
       log(esc1+"From network:"+str.length+":"+esc3+str.substring(0,math.min(str.length,54))+esc2)
       val stringTLV = otrInterface.messageReceiving(accountname, protocol, recipient, str, otrCallbacks)
       if(stringTLV!=null){
@@ -603,11 +594,19 @@ class P2pChatService extends android.app.Service {
           log("************* SMP succeeded ***************")
           connecting = false
           p2pEncryptedCommunication
+
+          // disconnect our relay connection, stay connected via direct p2p (only if relay not needed)
+          if(relaySocket!=null && !relayBasedP2pCommunication) {
+            log("p2handleSmpEvent force relaySocket.close")
+            relayQuitFlag=true
+            try { relaySocket.close } catch { case ex:Exception => }
+            relaySocket=null
+            activityMsgHandler.obtainMessage(P2pChatService.ACTIVITY_MSG_CONNECT_STATE_RELAY, 0, -1, null).sendToTarget
+          }
         }
 
         else if(smpEvent == OTRCallbacks.OTRL_SMPEVENT_FAILURE) {
           log("************* SMP failed ***************")
-          // abort "connecting..."
           connecting = false
           p2pQuit(true)
 
