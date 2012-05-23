@@ -191,7 +191,7 @@ class P2pChatService extends android.app.Service {
           ret = -3
           ex.printStackTrace
           AndrTools.runOnUiThread(activity) { () =>
-            AndrTools.alertDialog(activity, "Failed on", ex.getMessage) { () =>
+            AndrTools.alertDialog(activity, "Failed on", ex.getMessage) { () =>     // todo: no message is being shown
               activityMsgHandler.obtainMessage(P2pChatService.ACTIVITY_MSG_CONNECT_DIALOG_SHOW, -1, -1, null).sendToTarget
             }
           }
@@ -289,29 +289,39 @@ class P2pChatService extends android.app.Service {
       activityMsgHandler.obtainMessage(P2pChatService.ACTIVITY_MSG_CONNECT_STATE_RELAY, 1, -1, null).sendToTarget
       if(preferReleayedCommunication) {
         log("connectedThread preferReleayedCommunication ####")
-        relayBasedP2pCommunication = true  // receiveMsgHandler() -> p2pReceivePreHandler()
-                                           // p2pSend() -> send()
-                                           // do NOT disconnect relay connection in p2pReceiveHandler()
-
         // set publicUdpAddrString and otherUdpAddrString AS IF we are UDP connected
-        val tokenArrayOfStrings = connectString split '|'
-        val otherPublicIpAddr = tokenArrayOfStrings(2)
-        val otherPublicPort = new java.lang.Integer(tokenArrayOfStrings(3)).intValue
-        val myPublicIpAddr = tokenArrayOfStrings(4)
-        val myPublicPort = new java.lang.Integer(tokenArrayOfStrings(5)).intValue
-        otherUdpAddrString = otherPublicIpAddr+":"+otherPublicPort
         publicUdpAddrString = myPublicIpAddr+":"+myPublicPort
-        log("connectedThread otherUdpAddrString="+otherUdpAddrString+" -> p2pSendThread")
-        p2pSendThread
+        otherUdpAddrString = otherPublicIpAddr+":"+otherPublicPort
+        relayBasedP2pCommunication = true  // receiveMsgHandler() -> p2pReceivePreHandler(); p2pSend() -> send(); NO disconnect of relay connection
+        log("connectedThread preferReleayedCommunication otherUdpAddrString="+otherUdpAddrString)
+        send("relayBasedP2p=true")
 
       } else {
+        log("connectedThread NOT preferReleayedCommunication ####")
         super.connectedThread(connectString)  // receiving datagram's
       }
     }
 
+    /** we receive data via (or from) the relay server */
+    override def relayReceiveHandler(str:String) {
+      if(str.startsWith("start otr/smp")) {
+        log("relayReceiveHandler other client trying relayBasedP2pCommunication -> receiveMsgHandler ####")
+        // set publicUdpAddrString and otherUdpAddrString AS IF we are UDP connected
+        publicUdpAddrString = myPublicIpAddr+":"+myPublicPort
+        otherUdpAddrString = otherPublicIpAddr+":"+otherPublicPort
+        relayBasedP2pCommunication = true
+        receiveMsgHandler(str)
+        //p2pSendThread
+        return
+      }
+      
+      // if(str.startsWith("udpAddress="))
+
+      log("relayReceiveHandler str='"+str+"' UNEXPECTED IN P2P MODE ###########")
+    }
+
     /** we are now p2p connected (if relayBasedP2pCommunication is set, p2p is relayed; else it is direct) */
     override def p2pSendThread() {
-      //connecting = false
       // todo: change connect message from "Connecting..." to "Establish encryption..."
       if(!relayBasedP2pCommunication)
         activityMsgHandler.obtainMessage(P2pChatService.ACTIVITY_MSG_CONNECT_STATE_DIRECT, 1, -1, null).sendToTarget
@@ -327,7 +337,7 @@ class P2pChatService extends android.app.Service {
 
       log("p2pSendThread otherUdpAddrString='"+otherUdpAddrString+"'")
       if(publicUdpAddrString>otherUdpAddrString) {
-        val firstMessage = "start otr/smp..."
+        val firstMessage = "start otr/smp"
         log("send first msg: '"+firstMessage+"'")
         // client A will send a msg to get to "AKE succeeded" state, where the other client will do initiateSmp()
         otrMsgSend(firstMessage)       
@@ -453,7 +463,7 @@ class P2pChatService extends android.app.Service {
 
     override def p2pExit(ret:Int) {
       // the p2p connection has ended now
-      log("p2pExit hasBeenDisconnected="+hasBeenDisconnected)
+      log("p2pExit ret="+ret+" hasBeenDisconnected="+hasBeenDisconnected)
       activityMsgHandler.obtainMessage(P2pChatService.ACTIVITY_MSG_CONNECT_STATE_RELAY, 0, -1, null).sendToTarget
       activityMsgHandler.obtainMessage(P2pChatService.ACTIVITY_MSG_CONNECT_STATE_DIRECT, 0, -1, null).sendToTarget
       activityMsgHandler.obtainMessage(P2pChatService.ACTIVITY_MSG_CONNECT_STATE_CRYPTED, 0, -1, null).sendToTarget
@@ -982,7 +992,7 @@ class P2pChatService extends android.app.Service {
         hasBeenDisconnected = true
         log("p2pExit udpConnectIpAddr="+udpConnectIpAddr+" relayBasedP2pCommunication="+relayBasedP2pCommunication+
            " p2pQuitFlag="+p2pQuitFlag+" manualDisconnect="+manualDisconnect)
-        if((udpConnectIpAddr!=null || relayBasedP2pCommunication) && !manualDisconnect) {
+        if( /*(udpConnectIpAddr!=null || relayBasedP2pCommunication) &&*/ !manualDisconnect) {
           AndrTools.runOnUiThread(activity) { () =>
             AndrTools.alertDialog(activity, "P2P disconnect") { () =>
               activityMsgHandler.obtainMessage(P2pChatService.ACTIVITY_MSG_CONNECT_DIALOG_SHOW, -1, -1, null).sendToTarget
