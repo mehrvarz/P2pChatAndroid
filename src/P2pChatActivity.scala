@@ -34,6 +34,8 @@ class P2pChatActivity extends Activity {
   private val TAG = "P2pChatActivity"
   private val D = true
   private val REQUEST_SELECT_TARGET_KEY = 1
+  private val PREFS_P2P_CHAT = "prefsP2pChat"
+
   private var activity:Activity = null
   private var appService:P2pChatService = null
   private var appServiceConnection:ServiceConnection = null
@@ -287,11 +289,18 @@ class P2pChatActivity extends Activity {
         if(D) Log.i(TAG, "layoutInflater==null")
         return
       }
+
       val connectForm = layoutInflater.inflate(R.layout.connect_form, null)
       val editText = connectForm.findViewById(R.id.editText).asInstanceOf[EditText]
       if(otrString!=null)
         editText.setText(otrString)
+
+      val prefsP2pChat = getSharedPreferences(PREFS_P2P_CHAT, Context.MODE_PRIVATE)
+      val prefsPreferRelayedBool = prefsP2pChat.getBoolean("preferRelayed", false)
+
       val preferRelayedCheckBox = connectForm.findViewById(R.id.preferRelayedCommunication).asInstanceOf[CheckBox]
+      preferRelayedCheckBox.setChecked(prefsPreferRelayedBool)
+
       otrDialog = new AlertDialog.Builder(activity)
                      .setTitle("Off the record secret")
                      .setMessage("Both clients must enter the exact same secret. It's best to use two words separated by space:")
@@ -302,6 +311,12 @@ class P2pChatActivity extends Activity {
                             val tokenArrayOfStrings = otrString split ' '
                             val p2pSecret = tokenArrayOfStrings(0)
                             val smpSecret = if(tokenArrayOfStrings.length>1) tokenArrayOfStrings(1) else null
+
+                            // store preferRelayedCheckBox.isChecked
+                            val prefsP2pChatEditor = prefsP2pChat.edit
+                            prefsP2pChatEditor.putBoolean("preferRelayed", preferRelayedCheckBox.isChecked)
+                            prefsP2pChatEditor.commit
+                            
                             connectOTR(p2pSecret, smpSecret, preferRelayedCheckBox.isChecked)
                           }
                         })

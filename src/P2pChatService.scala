@@ -293,8 +293,12 @@ class P2pChatService extends android.app.Service {
         publicUdpAddrString = myPublicIpAddr+":"+myPublicPort
         otherUdpAddrString = otherPublicIpAddr+":"+otherPublicPort
         relayBasedP2pCommunication = true  // receiveMsgHandler() -> p2pReceivePreHandler(); p2pSend() -> send(); NO disconnect of relay connection
-        log("connectedThread preferReleayedCommunication otherUdpAddrString="+otherUdpAddrString)
-        send("relayBasedP2p=true")
+        log("connectedThread preferReleayedCommunication send 'relayBasedP2p=true'")
+
+        // on the other client, this send() MUST NOT arrive before "connect=..." from relay server
+        try { Thread.sleep(500); } catch { case ex:Exception => }
+        send("relayBasedP2p=true") // other side will call p2pSendThread (from within receiveMsgHandler)
+        p2pSendThread
 
       } else {
         log("connectedThread NOT preferReleayedCommunication ####")
@@ -342,7 +346,7 @@ class P2pChatService extends android.app.Service {
         // client A will send a msg to get to "AKE succeeded" state, where the other client will do initiateSmp()
         otrMsgSend(firstMessage)       
       } else {
-        log("not send first msg ####")
+        log("p2pSendThread not send first msg ####")
       }
     }
 
@@ -808,6 +812,10 @@ class P2pChatService extends android.app.Service {
         activityMsgHandler.obtainMessage(P2pChatService.ACTIVITY_MSG_CONNECT_STATE_DIRECT, 1, -1, null).sendToTarget
 
       connecting = false
+
+// todo: replace this alertDialog with...
+//      conversationQueuePut(displayMessage)
+//      activityMsgHandler.obtainMessage(P2pChatService.ACTIVITY_MSG_ADD_CONVERSATION, -1, -1, displayMessage).sendToTarget
 
       // this connect-dialog may immediately be replaced with an encryption-dialog
       AndrTools.runOnUiThread(activity) { () =>
